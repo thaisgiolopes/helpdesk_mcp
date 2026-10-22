@@ -32,7 +32,7 @@
 
 ## Fase 3 — Atualizar status
 
-**Status:** Implementada — validação MCP via `stdio` ainda pendente no runtime-alvo Python 3.12.
+**Status:** Concluída — implementação e validação funcional entregues em 2026-10-22; compatibilidade MCP via `stdio` no runtime-alvo Python 3.12 permanece pendente de confirmação.
 
 **Tool:** `atualizar_status`
 
@@ -48,10 +48,14 @@
 
 **Decisão registrada:** a atualização é idempotente quando o status solicitado já é o atual; `updated_at` representa a última mudança real e permanece inalterado nessa chamada. Essa regra consta nos requisitos e cenários de validação da Fase 3.
 
-**Registro da implementação:** A ferramenta, os testes funcionais e a documentação foram implementados. Na execução de 2026-10-22, `pytest -q` apresentou 47 testes aprovados e 1 falha. A falha ocorreu na inicialização do cliente MCP via `stdio` no Python 3.14.4; a validação A18 permanece pendente no Python 3.12, conforme `specs/03-atualizar-status/validacao.md`.
+**Registro da conclusão:** A ferramenta, os testes funcionais e a documentação foram implementados. Os critérios funcionais de entrada, erros, persistência no SQLite e continuidade das duas ferramentas de consulta foram verificados. Em 2026-10-22, os testes direcionados sem `stdio` apresentaram 30 aprovações; a suíte completa registrou 47 aprovações e uma falha. A falha ocorreu na inicialização do cliente MCP via `stdio` usando Python 3.14.4. Como Python 3.12, runtime-alvo, não estava instalado, a validação A18 permanece pendente nesse runtime e está registrada em `specs/03-atualizar-status/validacao.md`.
+
+## Validação transversal pendente
+
+As Fases 1, 2 e 3 têm implementação e validação funcional concluídas. A descoberta e invocação das ferramentas pelo transporte MCP `stdio` ainda precisam ser repetidas em Python 3.12, conforme os registros V14, H14 e A18 nas respectivas validações. Essa verificação de compatibilidade do ambiente não altera os contratos funcionais concluídos; deve ser feita antes de declarar a integração `stdio` validada no runtime-alvo.
 
 ## Critério geral do roadmap
 
 As fases deverão ser concluídas na ordem apresentada. Antes de implementar cada fase, deverá existir uma especificação funcional com parâmetros, retornos, validações, erros e cenários de teste; a implementação e os testes devem atender a essa especificação.
 
-Ao final das três fases, o servidor deverá disponibilizar as três ferramentas MCP e permitir demonstrar suas operações com dados fictícios no banco SQLite. A integração com a aplicação Streamlit será desenvolvida posteriormente, em uma etapa separada, fora destas três fases.
+Ao final das três fases, o servidor deverá disponibilizar as três ferramentas MCP e permitir demonstrar suas operações com dados fictícios no banco SQLite. Os contratos e persistência das três ferramentas estão implementados; a validação de transporte `stdio` no Python 3.12 está listada como verificação transversal pendente. A integração com a aplicação Streamlit será desenvolvida posteriormente, em uma etapa separada, fora destas três fases.

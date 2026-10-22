@@ -39,4 +39,6 @@ Se o resultado divergir deste contrato, corrigir a implementação ou registrar 
 
 ## Registro de execução
 
-Na execução de 2026-10-22, `pytest -q` apresentou 47 testes aprovados e 1 falha. Os cenários A01–A17 passaram, incluindo persistência, idempotência, rollback, ferramentas MCP em processo e isolamento. O teste de integração via `stdio` falhou antes da descoberta das ferramentas, durante a inicialização do cliente MCP no Python 3.14.4 disponível. Python 3.12, versão-alvo, não estava instalado; A18 permanece pendente de repetição nesse runtime.
+Na execução de 2026-10-22, os testes direcionados sem `stdio` (`pytest -q tests/test_status_update.py tests/test_mcp_tool.py -k 'not stdio'`) apresentaram 30 aprovações e 1 teste de `stdio` excluído. Esses cenários verificaram a identificação e o status, erros para entrada inválida e chamado inexistente, persistência após nova conexão e funcionamento de `listar_chamados` e `buscar_historico_cliente` com o status atualizado.
+
+A execução da suíte completa apresentou 47 testes aprovados e 1 falha. O teste de integração via `stdio` falhou antes da descoberta das ferramentas, durante a inicialização do cliente MCP no Python 3.14.4 disponível. Python 3.12, versão-alvo, não estava instalado; A18 permanece pendente de repetição nesse runtime. Portanto, a implementação e os critérios funcionais estão concluídos, mas a fase ainda não atende integralmente ao critério de aprovação de transporte `stdio` nesta validação.
