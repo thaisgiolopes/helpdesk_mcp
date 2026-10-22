@@ -1,2 +1,5 @@
 fastmcp==4.1.1
+ollama==0.6.3
 pytest==9.1.1
+streamlit==1.66.0
+tzdata==2026.5

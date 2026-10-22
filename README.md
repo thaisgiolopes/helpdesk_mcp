@@ -20,7 +20,7 @@ python -m pip install -r requirements.txt
 Inicie o servidor MCP pelo transporte `stdio`:
 
 ```bash
-python server.py
+python -m server
 ```
 
 O processo fica aguardando mensagens MCP no terminal. Não digite comandos nesse terminal enquanto ele estiver rodando; encerre com `Ctrl+C`. A inicialização cria `data/helpdesk.db` e as tabelas se estiverem ausentes. Os registros fictícios iniciais são inseridos uma única vez e não são recriados ao reiniciar o servidor. Os dados existentes, inclusive alterações e exclusões dos registros iniciais, são preservados.
@@ -28,10 +28,10 @@ O processo fica aguardando mensagens MCP no terminal. Não digite comandos nesse
 Para usar outro arquivo SQLite, defina `HELPDESK_DB_PATH` antes de iniciar o servidor:
 
 ```bash
-HELPDESK_DB_PATH=/caminho/para/teste.db python server.py
+HELPDESK_DB_PATH=/caminho/para/teste.db python -m server
 ```
 
-O caminho padrão do banco é relativo ao diretório do projeto, independentemente do diretório de onde `server.py` é iniciado.
+O caminho padrão do banco é `data/helpdesk.db`, relativo à raiz do projeto.
 
 ## Ferramenta `listar_chamados`
 
@@ -77,6 +77,47 @@ Exemplo de argumentos MCP:
 {"chamado_id": 1001, "novo_status": "em_atendimento"}
 ```
 
+## Aplicação web para atendimento
+
+A interface Streamlit funciona como cliente MCP: inicia o pacote `server` pelo transporte `stdio` e chama suas ferramentas. A aplicação nunca acessa o SQLite diretamente.
+
+### Protótipo com comandos fixos
+
+Esta versão interpreta padrões explícitos, sem modelo de linguagem. Inicie-a na raiz:
+
+```bash
+streamlit run app/streamlit_app.py
+```
+
+Comandos de exemplo:
+
+- `listar abertos` → `listar_chamados` com `status: aberto`
+- `histórico do cliente 2` → `buscar_historico_cliente` com `cliente_id: 2`
+- `alterar chamado 1001 para fechado` → `atualizar_status` com `chamado_id: 1001` e `novo_status: fechado`
+
+Os registros demonstrativos usam IDs de chamados de 1001 a 1006 e IDs de clientes de 1 a 3. Os status permitidos são `aberto`, `em_atendimento`, `aguardando_cliente`, `resolvido` e `fechado`. Um ID inexistente é encaminhado ao servidor MCP, que retorna o erro correspondente.
+
+### Versão com perguntas livres e modelo local
+
+Esta versão usa o Ollama e o modelo local `qwen3:4b` para selecionar uma ferramenta MCP a partir da pergunta em linguagem natural. Não é necessário configurar uma chave ou chamar uma API paga. Instale e inicie o Ollama conforme as [instruções oficiais](https://ollama.com/download), baixe o modelo e execute a aplicação:
+
+```bash
+ollama pull qwen3:4b
+streamlit run app/streamlit_app_ia.py
+```
+
+O endereço do Ollama pode ser configurado em `OLLAMA_HOST` e o modelo em `HELPDESK_LLM_MODEL`. Por padrão, a aplicação usa `http://localhost:11434` e `qwen3:4b`. O modelo recebe os schemas MCP descobertos do servidor, mas a execução das operações continua passando pelo cliente MCP via `stdio`.
+
+Antes de executar `atualizar_status`, a interface mostra o chamado e o status propostos e aguarda o botão **Confirmar atualização**. O atendente também pode cancelar; até confirmar, nenhuma alteração é enviada ao servidor.
+
+| Protótipo com comandos fixos | Versão com modelo local |
+|---|---|
+| Reconhece frases previstas, como `listar abertos` | Interpreta perguntas livres, como “Quais chamados ainda precisam de atendimento?” |
+| Resposta previsível e sem dependência de modelo | Mais flexível, mas depende do Ollama e do modelo instalado localmente |
+| Não exige serviço de IA | Não exige API paga nem envia a pergunta para um serviço externo |
+
+As duas versões mantêm o histórico na sessão do Streamlit. As datas permanecem armazenadas em UTC no SQLite e são convertidas para o fuso `America/Sao_Paulo` (Brasília) na apresentação.
+
 ## Registrar no VS Code
 
 O workspace já inclui `.vscode/mcp.json`, que registra o servidor usando o Python do ambiente virtual e o transporte `stdio`. Depois de criar `.venv` e instalar as dependências:
@@ -86,14 +127,44 @@ O workspace já inclui `.vscode/mcp.json`, que registra o servidor usando o Pyth
 3. Na Paleta de Comandos, execute **MCP: List Servers** ou **MCP: Open Workspace Folder MCP Configuration** e inicie/reinicie `helpdesk` se necessário.
 4. No chat do Copilot, habilite as três ferramentas e peça uma consulta ou atualização, por exemplo: “Liste os chamados em atendimento”, “Mostre o histórico do cliente 1” ou “Atualize o chamado 1001 para em atendimento”.
 
-Para registrar manualmente em outro workspace, execute **MCP: Add Server**, escolha **Command (stdio)** e informe o caminho absoluto para `.venv/bin/python` como comando e o caminho absoluto para `server.py` como argumento. No Windows, use o executável `.venv\\Scripts\\python.exe`. O VS Code mantém as configurações por workspace em `.vscode/mcp.json`; a documentação atual também descreve o formato portátil `.mcp.json`, que usa a chave superior `mcpServers` em vez de `servers`.
+Para registrar manualmente em outro workspace, execute **MCP: Add Server**, escolha **Command (stdio)** e informe o caminho absoluto para `.venv/bin/python` como comando e `-m server` como argumentos. No Windows, use o executável `.venv\\Scripts\\python.exe`. O VS Code mantém as configurações por workspace em `.vscode/mcp.json`; a documentação atual também descreve o formato portátil `.mcp.json`, que usa a chave superior `mcpServers` em vez de `servers`.
 
 ## Testes
 
-Com o ambiente virtual ativo, execute:
+Com Python 3.12 e o ambiente virtual ativo, execute a suíte:
 
 ```bash
-pytest
+python -m pytest -q
 ```
 
-Os testes usam bancos temporários isolados. A suíte cobre a persistência, inicialização idempotente, consulta por cliente, atualização de status, validações, idempotência e preservação de dados. Também verifica as ferramentas por cliente MCP, incluindo invocação via `stdio` no runtime-alvo Python 3.12.
+Os testes usam bancos temporários isolados. Para executar os grupos separadamente:
+
+```bash
+python -m pytest -q tests/test_mcp_tool.py -k "not stdio"  # descoberta e chamada das tools por cliente MCP em processo
+python -m pytest -q tests/test_cliente_history.py            # histórico e erros de cliente
+python -m pytest -q tests/test_status_update.py              # atualização, persistência e erros
+```
+
+`tests/test_database.py` cobre esquema, dados iniciais e listagem. `tests/test_mcp_tool.py` também contém o cenário de subprocesso via `stdio`, incluído na suíte completa.
+
+### Demonstração da chamada da interface
+
+A interface inicia o servidor como processo filho, conecta `fastmcp.Client` por `stdio` e envia a tool selecionada. Para manter a demonstração isolada do banco de desenvolvimento, inicie-a assim:
+
+```bash
+HELPDESK_DB_PATH=/tmp/helpdesk-streamlit.db streamlit run app/streamlit_app.py
+```
+
+Digite `listar abertos`; a resposta esperada contém os chamados fictícios `1001` e `1006`. Também é possível experimentar `histórico do cliente 2` e `alterar chamado 1001 para fechado` (esta última pede confirmação na versão com IA local).
+
+**Resultado de validação disponível:** a chamada real via `stdio` foi tentada a partir da função `chamar_tool` usada pela aplicação, mas não completou a negociação MCP com Python 3.14.4 (`initialize` expirou). O runtime-alvo documentado é Python 3.12 e não está instalado neste ambiente; por isso, a chamada real da UI ainda precisa ser confirmada em Python 3.12. A suíte executada em Python 3.14.4 teve 47 aprovações e uma falha no mesmo cenário `stdio`. Não considere o critério de integração da UI aprovado até repetir essa validação no runtime-alvo.
+
+## Constituição, especificações e histórico SDD
+
+As decisões gerais ficam em `specs/missao.md` e `specs/pilha-tecnologia.md`. Cada fase MCP tem `requisitos.md`, `planejamento.md` e `validacao.md` em sua pasta. O histórico Git registra as especificações antes da implementação (por exemplo, `2eb1402` antes de `8208641`, `b21c5d5` antes de `a5de24f` e `88113fd` antes de `f1eff7a`). Confira com:
+
+```bash
+git log --all --reverse --oneline
+```
+
+O protótipo Streamlit é uma demonstração adicional, mantida em `app/` e fora do processo SDD das três fases MCP.

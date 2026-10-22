@@ -6,14 +6,14 @@ import sqlite3
 import pytest
 from fastmcp import Client
 
-from database import (
+from server.database import (
     ClienteNaoEncontradoError,
     buscar_historico_cliente,
     connect,
     create_schema,
     initialize_database,
 )
-from server import mcp
+from server.server import mcp
 
 
 EXPECTED_FIELDS = {

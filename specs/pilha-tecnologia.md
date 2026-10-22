@@ -71,6 +71,7 @@ A implementação deverá separar:
 - `database.py`: conexão com SQLite e operações de persistência.
 - `seed.py`: inicialização idempotente dos dados fictícios.
 - `tests/`: testes automatizados das operações e da integração MCP.
+- `app/`: protótipos Streamlit que atuam como clientes MCP; não acessam SQLite diretamente.
 
 A estrutura poderá ser ajustada mediante justificativa documentada, desde que as responsabilidades permaneçam separadas.
 
@@ -120,7 +121,7 @@ A inicialização deverá criar a estrutura ausente sem recriar indiscriminadame
 - [ ] A atualização de status valida os valores permitidos e preserva a integridade dos dados.
 - [ ] Os testes verificam os comportamentos esperados e os casos de erro.
 - [ ] O README permite que outra pessoa instale, execute e teste o projeto.
-- [ ] A futura aplicação Streamlit realizará pelo menos uma chamada real ao servidor MCP.
+- [ ] A aplicação Streamlit em `app/` realiza pelo menos uma chamada real ao servidor MCP via `stdio`; o código está conectado, mas a validação ponta a ponta permanece pendente no runtime-alvo Python 3.12, conforme o README.
 
 ## 7. Controle das decisões
 

@@ -16,7 +16,7 @@ Esses clientes poderão solicitar operações sobre os chamados sem precisar imp
 
 O servidor será responsável por receber os argumentos das ferramentas, executar as operações correspondentes e retornar os resultados ao cliente.
 
-O atendente humano não interagirá diretamente com o servidor nesta etapa. Uma interface Streamlit será desenvolvida posteriormente para demonstrar a utilização das ferramentas por uma aplicação.
+O atendente interage com o protótipo Streamlit em `app/`, que funciona como cliente MCP separado. O código do servidor e a interface não compartilham acesso direto ao SQLite.
 
 ## 3. Escopo inicial
 
@@ -53,7 +53,7 @@ O projeto possui finalidade didática e apresenta as seguintes limitações:
 - Não haverá autenticação real, gerenciamento de usuários ou controle de acesso de produção.
 - Não haverá integração com sistemas externos de atendimento ou plataformas comerciais de helpdesk.
 - O servidor disponibilizará operações sobre os dados, mas não será responsável pela interface gráfica destinada ao atendente.
-- A aplicação Streamlit será desenvolvida separadamente e deverá demonstrar uma chamada real ao servidor MCP.
+- A aplicação Streamlit é um cliente separado e deverá demonstrar uma chamada real ao servidor MCP; a validação ponta a ponta via `stdio` continua pendente no runtime-alvo.
 
 ## 6. Princípios de desenvolvimento
 
@@ -64,6 +64,7 @@ O desenvolvimento seguirá os seguintes princípios:
 - **Reprodutibilidade:** o repositório conterá as instruções e os recursos necessários para instalar, executar e testar o projeto.
 - **Verificabilidade:** cada funcionalidade deverá possuir critérios que permitam conferir se a implementação atende à sua especificação.
 - **Simplicidade didática:** as decisões técnicas deverão favorecer a compreensão do funcionamento do MCP e do processo SDD.
+- **Protótipo de interface:** a aplicação Streamlit é uma demonstração adicional fora das três fases funcionais MCP e foi desenvolvida sem SDD, conforme o escopo solicitado para essa atividade.
 
 ## 7. Resultado esperado
 

@@ -7,7 +7,7 @@ from typing import Annotated
 from fastmcp import FastMCP
 from pydantic import Field
 
-from database import (
+from .database import (
     ChamadoNaoEncontradoError,
     ClienteNaoEncontradoError,
     VALID_STATUSES,
