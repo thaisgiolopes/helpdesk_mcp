@@ -13,6 +13,10 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_DB_PATH = PROJECT_ROOT / "data" / "helpdesk.db"
 
 
+class ClienteNaoEncontradoError(LookupError):
+    """Raised when a requested client ID does not exist."""
+
+
 def get_database_path() -> Path:
     """Return the configured database path, independent of the working directory."""
     configured_path = os.environ.get("HELPDESK_DB_PATH")
@@ -80,4 +84,33 @@ def listar_chamados(status: str | None = None, database_path: str | Path | None 
 
     with connect(database_path) as connection:
         rows = connection.execute(query, parameters).fetchall()
+    return [dict(row) for row in rows]
+
+
+def buscar_historico_cliente(
+    cliente_id: int,
+    database_path: str | Path | None = None,
+) -> list[dict]:
+    """Return a client's tickets, newest first, or raise if the client is unknown."""
+    if type(cliente_id) is not int or cliente_id < 1:
+        raise ValueError("cliente_id deve ser um inteiro positivo.")
+
+    with connect(database_path) as connection:
+        cliente = connection.execute(
+            "SELECT 1 FROM clientes WHERE id = ?", (cliente_id,)
+        ).fetchone()
+        if cliente is None:
+            raise ClienteNaoEncontradoError(
+                f"Cliente não encontrado: {cliente_id}."
+            )
+
+        rows = connection.execute(
+            """
+            SELECT id, cliente_id, descricao, status, created_at, updated_at
+            FROM chamados
+            WHERE cliente_id = ?
+            ORDER BY created_at DESC, id ASC
+            """,
+            (cliente_id,),
+        ).fetchall()
     return [dict(row) for row in rows]

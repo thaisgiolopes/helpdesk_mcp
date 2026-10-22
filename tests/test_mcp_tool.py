@@ -21,8 +21,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 async def run_mcp_checks():
     async with Client(mcp) as client:
         tools = await client.list_tools()
-        assert "listar_chamados" in {tool.name for tool in tools}
-        assert "buscar_historico_cliente" not in {tool.name for tool in tools}
+        tool_names = {tool.name for tool in tools}
+        assert "listar_chamados" in tool_names
+        assert "buscar_historico_cliente" in tool_names
 
         result = await client.call_tool("listar_chamados", {}, raise_on_error=False)
         assert not result.is_error
@@ -102,12 +103,19 @@ def test_tool_is_invokable_by_mcp_client_over_stdio(tmp_path):
             transport, timeout=10, init_timeout=10, mode="legacy"
         ) as client:
             tools = await client.list_tools()
-            assert "listar_chamados" in {tool.name for tool in tools}
+            tool_names = {tool.name for tool in tools}
+            assert "listar_chamados" in tool_names
+            assert "buscar_historico_cliente" in tool_names
             result = await client.call_tool(
                 "listar_chamados", {"status": "aberto"}, raise_on_error=False
             )
             assert not result.is_error
             assert result.data
             assert all(ticket["status"] == "aberto" for ticket in result.data)
+            history = await client.call_tool(
+                "buscar_historico_cliente", {"cliente_id": 1}, raise_on_error=False
+            )
+            assert not history.is_error
+            assert all(ticket["cliente_id"] == 1 for ticket in history.data)
 
     asyncio.run(run_stdio_check())

@@ -32,3 +32,7 @@ Usar `pytest`, bancos SQLite temporários e integração por cliente MCP via `st
 A fase está validada quando todos os cenários aplicáveis passam, a ferramenta é descoberta e invocada por cliente MCP via `stdio`, os erros de domínio são distintos dos resultados vazios e a documentação de execução está atualizada.
 
 Se houver divergência entre o comportamento observado e este contrato, corrigir a implementação ou discutir e registrar a mudança nesta especificação antes de concluir a fase.
+
+## Registro de execução
+
+Na execução de 2026-10-22, `pytest -q` apresentou 19 testes aprovados e 1 falha. Os cenários H01–H13 passaram, incluindo a descoberta e chamada da ferramenta por cliente MCP em processo. O teste via `stdio` falhou ao inicializar o cliente no Python 3.14.4 disponível; Python 3.12, runtime-alvo, não estava instalado. H14 permanece pendente de repetição no runtime previsto. A chamada em processo não substitui a validação `stdio`.
