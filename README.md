@@ -1,43 +1,73 @@
 # Helpdesk MCP
 
-Servidor MCP para operações sobre chamados de uma equipe de suporte técnico.
+Servidor MCP local para consultar chamados fictícios armazenados em SQLite. Esta implementação cobre **somente a Fase 1** do roadmap: a ferramenta `listar_chamados`.
 
-## Objetivo
+## Requisitos
 
-O projeto tem como objetivo desenvolver um servidor baseado no **Model Context Protocol (MCP)** para disponibilizar ferramentas que permitam a agentes de IA e aplicações clientes consultar e atualizar chamados de suporte técnico.
+- Python 3.12.
+- `pip`.
 
-Os dados serão armazenados localmente em um banco SQLite, inicializado com registros fictícios para permitir a execução e os testes do projeto sem depender de serviços externos.
+## Instalação e execução
 
-## Funcionalidades previstas
+Na raiz do repositório, crie e ative um ambiente virtual e instale as dependências fixadas:
 
-O servidor disponibilizará três ferramentas MCP:
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+```
 
-1. **Listar chamados:** consultar os chamados registrados, com a possibilidade de filtrar os resultados por status.
-2. **Consultar histórico de um cliente:** recuperar os chamados associados a um cliente específico.
-3. **Atualizar status de um chamado:** modificar o status de um chamado existente, respeitando as regras definidas para a operação.
+Inicie o servidor MCP pelo transporte `stdio`:
 
-O servidor será responsável pelas operações sobre os dados. A interface destinada à interação com o usuário será desenvolvida separadamente, em uma aplicação Streamlit que utilizará o servidor MCP.
+```bash
+python server.py
+```
 
-## Desenvolvimento orientado por especificações
+O processo fica aguardando mensagens MCP no terminal. Não digite comandos nesse terminal enquanto ele estiver rodando; encerre com `Ctrl+C`. A inicialização cria `data/helpdesk.db` e as tabelas se estiverem ausentes. Os registros fictícios iniciais são inseridos uma única vez e não são recriados ao reiniciar o servidor. Os dados existentes, inclusive alterações e exclusões dos registros iniciais, são preservados.
 
-O projeto utilizará a abordagem *Spec-Driven Development* (SDD), na qual os requisitos e as regras esperadas são documentados antes da implementação das funcionalidades.
+Para usar outro arquivo SQLite, defina `HELPDESK_DB_PATH` antes de iniciar o servidor:
 
-As especificações serão mantidas no diretório `specs/` e servirão como referência para o planejamento, a implementação e a verificação do comportamento do sistema.
+```bash
+HELPDESK_DB_PATH=/caminho/para/teste.db python server.py
+```
 
-## Escopo e limitações
+O caminho padrão do banco é relativo ao diretório do projeto, independentemente do diretório de onde `server.py` é iniciado.
 
-- Utilização de dados exclusivamente fictícios.
-- Execução local, com armazenamento em SQLite.
-- Ausência de autenticação real e de integração com sistemas externos de atendimento.
-- Finalidade didática, sem pretensão de utilização em um ambiente de produção.
+## Ferramenta `listar_chamados`
 
-## Estado do projeto
+- Sem argumento ou com `status: null`, retorna todos os chamados.
+- Com `status`, filtra por um dos valores exatos: `aberto`, `em_atendimento`, `aguardando_cliente`, `resolvido` ou `fechado`.
+- Status vazio, desconhecido ou com diferença de maiúsculas/minúsculas retorna erro de validação.
+- Retorna os campos `id`, `cliente_id`, `descricao`, `status`, `created_at` e `updated_at`, ordenados por data de criação decrescente e, em caso de empate, por ID crescente.
+- Uma consulta válida sem resultados retorna `[]`.
 
-O repositório está na etapa inicial de definição da missão e das especificações. As funcionalidades serão implementadas e testadas nas próximas etapas.
+Exemplos de argumentos MCP:
 
-## Tecnologias previstas
+```json
+{}
+```
 
-- Python
-- Model Context Protocol (MCP)
-- SQLite
-- Streamlit, na etapa de desenvolvimento da interface
+```json
+{"status": "aberto"}
+```
+
+## Registrar no VS Code
+
+O workspace já inclui `.vscode/mcp.json`, que registra o servidor usando o Python do ambiente virtual e o transporte `stdio`. Depois de criar `.venv` e instalar as dependências:
+
+1. Abra a raiz deste repositório no VS Code.
+2. Abra o arquivo `.vscode/mcp.json` para conferir a configuração `helpdesk`.
+3. Na Paleta de Comandos, execute **MCP: List Servers** ou **MCP: Open Workspace Folder MCP Configuration** e inicie/reinicie `helpdesk` se necessário.
+4. No chat do Copilot, habilite a ferramenta `listar_chamados` e peça uma listagem, por exemplo: “Liste os chamados em atendimento”.
+
+Para registrar manualmente em outro workspace, execute **MCP: Add Server**, escolha **Command (stdio)** e informe o caminho absoluto para `.venv/bin/python` como comando e o caminho absoluto para `server.py` como argumento. No Windows, use o executável `.venv\\Scripts\\python.exe`. O VS Code mantém as configurações por workspace em `.vscode/mcp.json`; a documentação atual também descreve o formato portátil `.mcp.json`, que usa a chave superior `mcpServers` em vez de `servers`.
+
+## Testes
+
+Com o ambiente virtual ativo, execute:
+
+```bash
+pytest
+```
+
+Os testes usam bancos temporários isolados. A suíte cobre a persistência e a inicialização idempotente, verifica a descoberta da ferramenta por um cliente FastMCP e exercita o contrato da ferramenta. Há também um teste de invocação via `stdio`, executado com o runtime-alvo Python 3.12.
