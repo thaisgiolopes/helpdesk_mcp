@@ -168,3 +168,6 @@ git log --all --reverse --oneline
 ```
 
 O protótipo Streamlit é uma demonstração adicional, mantida em `app/` e fora do processo SDD das três fases MCP.
+
+## Link do repositório
+https://github.com/thaisgiolopes/helpdesk_mcp.git
