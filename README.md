@@ -1,6 +1,6 @@
 # Helpdesk MCP
 
-Servidor MCP local para consultar chamados fictícios armazenados em SQLite. Esta implementação cobre **somente a Fase 1** do roadmap: a ferramenta `listar_chamados`.
+Servidor MCP local para consultar chamados fictícios armazenados em SQLite. Esta implementação cobre as Fases 1 e 2 do roadmap: `listar_chamados` e `buscar_historico_cliente`.
 
 ## Requisitos
 
@@ -51,6 +51,19 @@ Exemplos de argumentos MCP:
 {"status": "aberto"}
 ```
 
+## Ferramenta `buscar_historico_cliente`
+
+- Recebe o argumento obrigatório `cliente_id`, que deve ser um inteiro positivo.
+- Retorna os chamados daquele cliente com os mesmos campos e ordenação de `listar_chamados`.
+- Para cliente existente sem chamados, retorna `[]`. Para cliente inexistente ou identificador inválido, retorna erro claro.
+- Não retorna nome ou e-mail do cliente e não altera dados.
+
+Exemplo de argumentos MCP:
+
+```json
+{"cliente_id": 1}
+```
+
 ## Registrar no VS Code
 
 O workspace já inclui `.vscode/mcp.json`, que registra o servidor usando o Python do ambiente virtual e o transporte `stdio`. Depois de criar `.venv` e instalar as dependências:
@@ -58,7 +71,7 @@ O workspace já inclui `.vscode/mcp.json`, que registra o servidor usando o Pyth
 1. Abra a raiz deste repositório no VS Code.
 2. Abra o arquivo `.vscode/mcp.json` para conferir a configuração `helpdesk`.
 3. Na Paleta de Comandos, execute **MCP: List Servers** ou **MCP: Open Workspace Folder MCP Configuration** e inicie/reinicie `helpdesk` se necessário.
-4. No chat do Copilot, habilite a ferramenta `listar_chamados` e peça uma listagem, por exemplo: “Liste os chamados em atendimento”.
+4. No chat do Copilot, habilite `listar_chamados` e `buscar_historico_cliente` e peça uma consulta, por exemplo: “Liste os chamados em atendimento” ou “Mostre o histórico do cliente 1”.
 
 Para registrar manualmente em outro workspace, execute **MCP: Add Server**, escolha **Command (stdio)** e informe o caminho absoluto para `.venv/bin/python` como comando e o caminho absoluto para `server.py` como argumento. No Windows, use o executável `.venv\\Scripts\\python.exe`. O VS Code mantém as configurações por workspace em `.vscode/mcp.json`; a documentação atual também descreve o formato portátil `.mcp.json`, que usa a chave superior `mcpServers` em vez de `servers`.
 
@@ -70,4 +83,4 @@ Com o ambiente virtual ativo, execute:
 pytest
 ```
 
-Os testes usam bancos temporários isolados. A suíte cobre a persistência e a inicialização idempotente, verifica a descoberta da ferramenta por um cliente FastMCP e exercita o contrato da ferramenta. Há também um teste de invocação via `stdio`, executado com o runtime-alvo Python 3.12.
+Os testes usam bancos temporários isolados. A suíte cobre a persistência, a inicialização idempotente, a consulta por cliente, validações e a descoberta das ferramentas pelo cliente MCP. Também há testes de invocação via `stdio`, executados com o runtime-alvo Python 3.12.

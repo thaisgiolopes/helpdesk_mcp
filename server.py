@@ -1,10 +1,18 @@
-"""FastMCP stdio server exposing the first-phase ticket listing tool."""
+"""FastMCP stdio server exposing the first two Helpdesk tools."""
 
 from __future__ import annotations
 
-from fastmcp import FastMCP
+from typing import Annotated
 
-from database import initialize_database, listar_chamados as consultar_chamados
+from fastmcp import FastMCP
+from pydantic import Field
+
+from database import (
+    ClienteNaoEncontradoError,
+    buscar_historico_cliente as consultar_historico_cliente,
+    initialize_database,
+    listar_chamados as consultar_chamados,
+)
 
 
 VALID_STATUSES = {
@@ -29,6 +37,21 @@ async def listar_chamados(status: str | None = None) -> list[dict]:
         allowed = ", ".join(sorted(VALID_STATUSES))
         raise ValueError(f"Status inválido: {status!r}. Valores aceitos: {allowed}.")
     return consultar_chamados(status)
+
+
+@mcp.tool()
+async def buscar_historico_cliente(
+    cliente_id: Annotated[int, Field(strict=True, gt=0)],
+) -> list[dict]:
+    """Busca os chamados vinculados a um cliente existente.
+
+    Args:
+        cliente_id: Identificador inteiro positivo do cliente.
+    """
+    try:
+        return consultar_historico_cliente(cliente_id)
+    except ClienteNaoEncontradoError as error:
+        raise ValueError(str(error)) from None
 
 
 def main() -> None:

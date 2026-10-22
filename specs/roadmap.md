@@ -14,6 +14,8 @@
 
 ## Fase 2 — Buscar histórico de cliente
 
+**Status:** Concluída — implementação entregue em 2026-10-22.
+
 **Tool:** `buscar_historico_cliente`
 
 **Objetivo:** Implementar a consulta dos chamados associados a um cliente específico, permitindo visualizar seu histórico de atendimento.
@@ -26,18 +28,25 @@
 
 **Decisão de escopo:** “Histórico” nesta fase significa a lista de chamados do cliente. Não representa o registro das transições de status ao longo do tempo.
 
+**Registro da conclusão:** A consulta, a distinção entre cliente inexistente e cliente sem chamados, a validação de entrada, os testes e a documentação foram implementados. Na execução disponível, 19 testes passaram e 1 falhou. O cenário H14 via `stdio` não concluiu a inicialização do cliente MCP no Python 3.14.4; Python 3.12, versão-alvo, não estava instalado. H14 permanece pendente de repetição no runtime previsto; a chamada pelo cliente MCP em processo passou, mas não substitui esse cenário.
+
 ## Fase 3 — Atualizar status
+
+**Status:** Planejada — ainda não implementada; a especificação funcional deve ser criada antes do código.
 
 **Tool:** `atualizar_status`
 
 **Objetivo:** Implementar a atualização do status de um chamado existente, validando o identificador do chamado e o novo status informado.
 
 **Critérios de conclusão:**
-- Recebe um identificador de chamado e um dos status permitidos na especificação vigente.
-- Persiste o novo status e atualiza `updated_at` na mesma transação.
-- Retorna resultado claro para chamado inexistente e status inválido; falhas não alteram o registro.
+- Recebe um `chamado_id` inteiro positivo e um dos status permitidos na especificação vigente; identificadores inválidos são rejeitados conforme a regra comum da Constituição.
+- Persiste o novo status e atualiza `updated_at` na mesma transação, preservando `id`, `cliente_id`, `descricao` e `created_at`.
+- Retorna erro claro para chamado inexistente, sem tratar o caso como sucesso ou criar o registro; erros de identificador e status também são claros e nenhuma falha altera parcialmente o chamado.
 - É descoberta e invocada por cliente MCP via `stdio`; sucesso, status inválido, chamado inexistente e persistência após nova conexão são testados.
-- Não cria uma tabela de transições de status nesta fase; o banco mantém o estado atual do chamado.
+- Atualiza somente o status atual e `updated_at`; não cria uma tabela de transições nesta fase, portanto status anteriores não ficam consultáveis.
+- Se o status solicitado já for o atual, retorna sucesso sem alterar dados nem `updated_at`.
+
+**Decisão registrada:** a atualização é idempotente quando o status solicitado já é o atual; `updated_at` representa a última mudança real e permanece inalterado nessa chamada. A especificação funcional da Fase 3 deverá refletir e testar esse comportamento.
 
 ## Critério geral do roadmap
 

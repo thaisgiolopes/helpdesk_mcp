@@ -49,13 +49,17 @@ A proposta inicial utiliza duas tabelas:
 - `created_at`: data e hora de criação.
 - `updated_at`: data e hora da última atualização.
 
-Os campos de data e hora usam o formato UTC `YYYY-MM-DDTHH:MM:SSZ`, com precisão de segundos e representação consistente para permitir ordenação textual determinística. Uma atualização de status deverá gravar o novo `updated_at` na mesma transação que altera o status.
+Os identificadores de clientes e chamados são inteiros positivos. Ferramentas que recebem esses identificadores devem exigir o valor, rejeitar nulos, booleanos, strings, frações, zero e negativos, e não fazer conversão implícita. Essa regra mantém o contrato MCP coerente com as chaves primárias `INTEGER` do SQLite.
+
+Os campos de data e hora usam o formato UTC `YYYY-MM-DDTHH:MM:SSZ`, com precisão de segundos e representação consistente para permitir ordenação textual determinística.
+
+Na atualização de status, a operação deverá alterar somente `status` e `updated_at`, na mesma transação. Os campos `id`, `cliente_id`, `descricao` e `created_at` devem ser preservados. Se o chamado já estiver no status solicitado, a operação será um sucesso sem alteração e manterá `updated_at`, tornando chamadas repetidas idempotentes. O modelo mantém somente o status atual: uma atualização substitui o status anterior e não cria um registro de transição. Status anteriores não poderão ser recuperados. Se for necessário auditar transições, será preciso especificar uma tabela de histórico e revisar o escopo antes de implementar a atualização.
 
 O relacionamento será de um para muitos entre clientes e chamados. A chave estrangeira deverá ser aplicada com as restrições de integridade apropriadas.
 
 O esquema atual é suficiente para as Fases 2 e 3: a busca de histórico consulta `chamados` pelo `cliente_id` relacionado a `clientes`, e a atualização altera o `status` e `updated_at` do chamado existente. Essas fases não exigem uma nova tabela nem mudança de esquema dentro do escopo definido. Uma tabela adicional só deverá ser proposta se o produto passar a exigir o registro de transições de status.
 
-Os status inicialmente propostos são `aberto`, `em_atendimento`, `aguardando_cliente`, `resolvido` e `fechado`. A lista definitiva deverá ser registrada na especificação funcional antes da implementação.
+Os status permitidos no projeto são `aberto`, `em_atendimento`, `aguardando_cliente`, `resolvido` e `fechado`, com correspondência exata e sensível a maiúsculas/minúsculas. Essa é a lista canônica para validação das ferramentas e para a restrição `CHECK` do SQLite. Qualquer alteração deverá atualizar a Constituição, as especificações funcionais, os testes e a restrição do banco; bancos já existentes poderão exigir migração.
 
 O histórico de um cliente significa a consulta dos chamados vinculados a ele, ordenados por data de criação decrescente e, em caso de empate, por ID crescente. Isso não representa um log das transições de status. O registro de todas as transições não faz parte das três fases do roadmap; uma necessidade futura deverá ser especificada antes de alterar o modelo de dados.
 
