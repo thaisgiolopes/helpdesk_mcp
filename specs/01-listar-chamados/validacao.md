@@ -30,3 +30,7 @@ Usar `pytest`, banco SQLite temporário e testes de integração por meio de um 
 A fase está concluída quando todos os cenários aplicáveis passam, a ferramenta foi invocada por um cliente MCP, a inicialização idempotente foi verificada e a documentação de execução está atualizada.
 
 Divergências entre a implementação e os requisitos devem ser corrigidas ou discutidas e registradas nas especificações antes da conclusão da fase.
+
+## Registro de execução
+
+Na execução registrada em 2026-10-21, `pytest` apresentou 7 testes aprovados e 1 falha. Os cenários de contrato, persistência, isolamento e inicialização passaram. O teste V14 (cliente MCP via `stdio`) falhou durante a inicialização do cliente no Python 3.14.4 disponível. A versão-alvo Python 3.12 não estava instalada, portanto V14 continua pendente de repetição no runtime previsto. A chamada pelo cliente MCP em processo passou, mas não substitui V14.

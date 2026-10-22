@@ -49,11 +49,15 @@ A proposta inicial utiliza duas tabelas:
 - `created_at`: data e hora de criação.
 - `updated_at`: data e hora da última atualização.
 
+Os campos de data e hora usam o formato UTC `YYYY-MM-DDTHH:MM:SSZ`, com precisão de segundos e representação consistente para permitir ordenação textual determinística. Uma atualização de status deverá gravar o novo `updated_at` na mesma transação que altera o status.
+
 O relacionamento será de um para muitos entre clientes e chamados. A chave estrangeira deverá ser aplicada com as restrições de integridade apropriadas.
+
+O esquema atual é suficiente para as Fases 2 e 3: a busca de histórico consulta `chamados` pelo `cliente_id` relacionado a `clientes`, e a atualização altera o `status` e `updated_at` do chamado existente. Essas fases não exigem uma nova tabela nem mudança de esquema dentro do escopo definido. Uma tabela adicional só deverá ser proposta se o produto passar a exigir o registro de transições de status.
 
 Os status inicialmente propostos são `aberto`, `em_atendimento`, `aguardando_cliente`, `resolvido` e `fechado`. A lista definitiva deverá ser registrada na especificação funcional antes da implementação.
 
-O histórico de um cliente será inicialmente definido como a consulta dos chamados vinculados a ele, ordenados por data de criação. O registro de todas as transições de status não fará parte do escopo inicial, salvo se um requisito posterior justificar sua inclusão.
+O histórico de um cliente significa a consulta dos chamados vinculados a ele, ordenados por data de criação decrescente e, em caso de empate, por ID crescente. Isso não representa um log das transições de status. O registro de todas as transições não faz parte das três fases do roadmap; uma necessidade futura deverá ser especificada antes de alterar o modelo de dados.
 
 ### 2.5. Arquitetura proposta
 
