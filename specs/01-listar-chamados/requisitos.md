@@ -16,7 +16,7 @@ Valores aceitos:
 - `resolvido`
 - `fechado`
 
-Esses valores seguem a proposta da pilha tecnológica. Se a lista for alterada posteriormente, os documentos deverão ser atualizados antes da implementação.
+Essa é a lista canônica de status permitidos definida em `specs/pilha-tecnologia.md`. A validação da ferramenta e a restrição `CHECK` do SQLite devem usar os mesmos valores. Qualquer mudança exige atualizar a Constituição, as especificações e os testes antes de alterar a implementação ou o esquema.
 
 Regras:
 - `status` omitido ou nulo: listar chamados de todos os status.
