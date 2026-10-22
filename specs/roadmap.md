@@ -32,7 +32,7 @@
 
 ## Fase 3 — Atualizar status
 
-**Status:** Planejada — ainda não implementada; a especificação funcional deve ser criada antes do código.
+**Status:** Implementada — validação MCP via `stdio` ainda pendente no runtime-alvo Python 3.12.
 
 **Tool:** `atualizar_status`
 
@@ -46,7 +46,9 @@
 - Atualiza somente o status atual e `updated_at`; não cria uma tabela de transições nesta fase, portanto status anteriores não ficam consultáveis.
 - Se o status solicitado já for o atual, retorna sucesso sem alterar dados nem `updated_at`.
 
-**Decisão registrada:** a atualização é idempotente quando o status solicitado já é o atual; `updated_at` representa a última mudança real e permanece inalterado nessa chamada. A especificação funcional da Fase 3 deverá refletir e testar esse comportamento.
+**Decisão registrada:** a atualização é idempotente quando o status solicitado já é o atual; `updated_at` representa a última mudança real e permanece inalterado nessa chamada. Essa regra consta nos requisitos e cenários de validação da Fase 3.
+
+**Registro da implementação:** A ferramenta, os testes funcionais e a documentação foram implementados. Na execução de 2026-10-22, `pytest -q` apresentou 47 testes aprovados e 1 falha. A falha ocorreu na inicialização do cliente MCP via `stdio` no Python 3.14.4; a validação A18 permanece pendente no Python 3.12, conforme `specs/03-atualizar-status/validacao.md`.
 
 ## Critério geral do roadmap
 

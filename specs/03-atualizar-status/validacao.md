@@ -36,3 +36,7 @@ Usar `pytest`, bancos SQLite temporários e cliente MCP via `stdio`. Testar regr
 A fase está validada quando todos os cenários aplicáveis passam, a operação inválida ou inexistente não altera dados, a mudança válida persiste após nova conexão, as ferramentas anteriores continuam disponíveis e a atualização foi exercitada por cliente MCP via `stdio`.
 
 Se o resultado divergir deste contrato, corrigir a implementação ou registrar a decisão aprovada nesta especificação antes de concluir a fase.
+
+## Registro de execução
+
+Na execução de 2026-10-22, `pytest -q` apresentou 47 testes aprovados e 1 falha. Os cenários A01–A17 passaram, incluindo persistência, idempotência, rollback, ferramentas MCP em processo e isolamento. O teste de integração via `stdio` falhou antes da descoberta das ferramentas, durante a inicialização do cliente MCP no Python 3.14.4 disponível. Python 3.12, versão-alvo, não estava instalado; A18 permanece pendente de repetição nesse runtime.

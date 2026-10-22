@@ -24,6 +24,7 @@ async def run_mcp_checks():
         tool_names = {tool.name for tool in tools}
         assert "listar_chamados" in tool_names
         assert "buscar_historico_cliente" in tool_names
+        assert "atualizar_status" in tool_names
 
         result = await client.call_tool("listar_chamados", {}, raise_on_error=False)
         assert not result.is_error
@@ -106,6 +107,7 @@ def test_tool_is_invokable_by_mcp_client_over_stdio(tmp_path):
             tool_names = {tool.name for tool in tools}
             assert "listar_chamados" in tool_names
             assert "buscar_historico_cliente" in tool_names
+            assert "atualizar_status" in tool_names
             result = await client.call_tool(
                 "listar_chamados", {"status": "aberto"}, raise_on_error=False
             )
@@ -117,5 +119,12 @@ def test_tool_is_invokable_by_mcp_client_over_stdio(tmp_path):
             )
             assert not history.is_error
             assert all(ticket["cliente_id"] == 1 for ticket in history.data)
+            updated = await client.call_tool(
+                "atualizar_status",
+                {"chamado_id": 1001, "novo_status": "resolvido"},
+                raise_on_error=False,
+            )
+            assert not updated.is_error
+            assert updated.data["status"] == "resolvido"
 
     asyncio.run(run_stdio_check())
