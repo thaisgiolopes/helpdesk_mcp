@@ -10,8 +10,8 @@ from fastmcp import Client
 from fastmcp.client.transports import StdioTransport
 import pytest
 
-from database import initialize_database
-from server import mcp
+from server.database import initialize_database
+from server.server import mcp
 
 
 STATUSES = ["aberto", "em_atendimento", "aguardando_cliente", "resolvido", "fechado"]
@@ -93,7 +93,7 @@ def test_tool_is_invokable_by_mcp_client_over_stdio(tmp_path):
     env = {**os.environ, "HELPDESK_DB_PATH": str(database_path)}
     transport = StdioTransport(
         command=sys.executable,
-        args=[str(PROJECT_ROOT / "server.py")],
+        args=["-m", "server"],
         env=env,
         cwd=str(PROJECT_ROOT),
         log_file=tmp_path / "server.stderr.log",

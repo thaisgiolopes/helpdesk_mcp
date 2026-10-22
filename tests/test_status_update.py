@@ -6,8 +6,8 @@ import sqlite3
 import pytest
 from fastmcp import Client
 
-import database
-from database import (
+from server import database
+from server.database import (
     ChamadoNaoEncontradoError,
     atualizar_status,
     buscar_historico_cliente,
@@ -15,7 +15,7 @@ from database import (
     initialize_database,
     listar_chamados,
 )
-from server import mcp
+from server.server import mcp
 
 
 EXPECTED_FIELDS = {

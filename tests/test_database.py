@@ -4,8 +4,8 @@ import sqlite3
 
 import pytest
 
-from database import connect, create_schema, initialize_database, listar_chamados
-from seed import CHAMADOS
+from server.database import connect, create_schema, initialize_database, listar_chamados
+from server.seed import CHAMADOS
 
 
 EXPECTED_FIELDS = {

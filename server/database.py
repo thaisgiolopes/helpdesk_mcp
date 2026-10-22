@@ -7,10 +7,10 @@ import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 
-from seed import seed_database
+from .seed import seed_database
 
 
-PROJECT_ROOT = Path(__file__).resolve().parent
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DB_PATH = PROJECT_ROOT / "data" / "helpdesk.db"
 VALID_STATUSES = frozenset(
     {
